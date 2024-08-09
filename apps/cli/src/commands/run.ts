@@ -170,10 +170,15 @@ export default class Run extends BaseCommand<typeof Run> {
 
         try {
             // run compose environment
-            await execa("docker", [...compose_args, "up", ...up_args], {
-                env,
-                stdio: "inherit",
-            });
+            await Promise.all([
+                execa("docker", [...compose_args, "up", ...up_args], {
+                    env,
+                    stdio: "inherit",
+                }),
+                execa("nonodo", ["--high-level-graphql", "--http-port=8181", "--enable-debug", "--node-version=v2",  "--sqlite-file=/tmp/sqlite3"], {
+                    stdio: "inherit",
+                })
+            ]);
         } catch (e: unknown) {
             // 130 is a graceful shutdown, so we can swallow it
             if ((e as any).exitCode !== 130) {
